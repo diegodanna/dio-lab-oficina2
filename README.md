@@ -256,4 +256,47 @@ ORDER BY OS.data_emissao DESC;
 Esta consulta (SELECT) recupera informações detalhadas sobre cada ordem de serviço, incluindo o nome do cliente, modelo e marca do veículo, e a equipe responsável. Ela cria um atributo derivado (ValorTotal), somando os custos de mão de obra dos serviços e os valores das peças associadas à OS. Utiliza junções (JOIN e LEFT JOIN) para combinar dados de diversas tabelas (OrdemServico, Veiculo, Cliente, Equipe, OS_Servico, Servico, OS_Peca, Peca). Os resultados são agrupados (GROUP BY) pela ordem de serviço e ordenados (ORDER BY) pela data de emissão em ordem decrescente, mostrando as OS mais recentes primeiro.
 
 Resultado: 
-!(consulta1.png)
+![consulta1](consulta1.png)
+
+2. Equipes com Maior Número de Ordens de Serviço Atendidas
+Pergunta: Quais equipes atenderam mais de 3 ordens de serviço e quantas ordens cada uma atendeu, em ordem decrescente de total de ordens?
+
+```sql
+SELECT 
+    Equipe.nome AS NomeEquipe,
+    COUNT(OS.id_os) AS TotalOrdensAtendidas
+FROM Equipe
+JOIN OrdemServico OS ON Equipe.id_equipe = OS.id_equipe
+GROUP BY Equipe.nome
+HAVING TotalOrdensAtendidas > 3
+ORDER BY TotalOrdensAtendidas DESC;
+```
+Esta consulta (SELECT) identifica as equipes que mais trabalharam. Ela junta (JOIN) a tabela Equipe com OrdemServico para contar (COUNT) quantas ordens de serviço cada equipe atendeu. Os resultados são agrupados (GROUP BY) pelo nome da equipe. A cláusula HAVING filtra esses grupos, mostrando apenas as equipes que atenderam mais de 3 ordens de serviço, e os resultados são ordenados (ORDER BY) pelo total de ordens atendidas de forma decrescente.
+
+Resultado:
+![consulta2](consulta2.png)
+
+3. Mecânicos com Maior Volume de Serviços e Peças Utilizadas
+Pergunta: Quais mecânicos executaram mais de 8 serviços e qual o total de ordens de serviço atendidas, serviços executados e peças utilizadas por cada um, ordenado pelo total de ordens atendidas?
+
+```sql
+SELECT 
+    Mecanico.nome AS NomeMecanico,
+    Mecanico.especialidade AS Especialidade,
+    COUNT(OS.id_os) AS TotalOrdensAtendidas,
+    SUM(OS_Servico.quantidade) AS TotalServicosExecutados,
+    SUM(OS_Peca.quantidade) AS TotalPecasUsadas
+FROM Mecanico
+JOIN Equipe ON Mecanico.id_equipe = Equipe.id_equipe
+JOIN OrdemServico OS ON Equipe.id_equipe = OS.id_equipe
+LEFT JOIN OS_Servico ON OS.id_os = OS_Servico.id_os
+LEFT JOIN OS_Peca ON OS.id_os = OS_Peca.id_os
+GROUP BY Mecanico.nome, Mecanico.especialidade
+HAVING TotalServicosExecutados > 8
+ORDER BY TotalOrdensAtendidas DESC;
+```
+
+Esta consulta (SELECT) tem como objetivo analisar a produtividade dos mecânicos. Ela junta (JOIN e LEFT JOIN) informações de Mecanico, Equipe, OrdemServico, OS_Servico e OS_Peca para contabilizar o número de ordens de serviço, serviços e peças por mecânico. Cria atributos derivados (TotalOrdensAtendidas, TotalServicosExecutados, TotalPecasUsadas). Os dados são agrupados (GROUP BY) por nome e especialidade do mecânico. A condição HAVING filtra os resultados para mostrar apenas os mecânicos que executaram mais de 8 serviços. Por fim, os resultados são ordenados (ORDER BY) pelo total de ordens atendidas em ordem decrescente.
+
+Resultado:
+![consulta3](consulta3.png)
